@@ -123,9 +123,9 @@ class _Logo extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: const Color.fromARGB(255, 9, 36, 238).withOpacity(0.4), width: 2),
+        border: Border.all(color: const Color.fromARGB(255, 8, 17, 184).withOpacity(0.4), width: 2),
         boxShadow: [
-          BoxShadow(color: const Color.fromARGB(255, 12, 56, 231).withOpacity(0.22), blurRadius: 40, spreadRadius: 4),
+          BoxShadow(color: const Color.fromARGB(255, 42, 42, 164).withOpacity(0.22), blurRadius: 40, spreadRadius: 4),
         ],
       ),
       child: const Center(child: Text('⚓', style: TextStyle(fontSize: 38))),

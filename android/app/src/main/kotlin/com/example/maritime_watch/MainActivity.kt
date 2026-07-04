@@ -1,4 +1,4 @@
-package com.marinedept.maritime_watch
+package com.example.maritime_watch
 
 import io.flutter.embedding.android.FlutterActivity
 
