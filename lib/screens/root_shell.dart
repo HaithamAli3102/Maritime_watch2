@@ -22,7 +22,6 @@ class RootShellState extends State<RootShell> {
   late int _index = widget.initialIndex;
 
   void goTo(int index) => setState(() => _index = index);
-
   static const _screens = [
     LocationScreen(),
     ZonesScreen(),

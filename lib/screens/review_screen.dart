@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:maritime_watch/screens/report_screen.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../models/boat_report.dart';
@@ -93,7 +96,10 @@ class ReviewScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                    onPressed: () => context.findAncestorStateOfType<RootShellState>()?.goTo(2),
+                    onPressed: (){
+                      Get.to(()=>ReportScreen());
+                    },
+                    // onPressed: () => context.findAncestorStateOfType<RootShellState>()?.goTo(2),
                     child: const Text('Edit', style: TextStyle(fontWeight: FontWeight.w700)),
                   ),
                 ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../services/app_state.dart';
@@ -78,10 +80,11 @@ class _LocationScreenState extends State<LocationScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  final shell = context.findAncestorStateOfType<RootShellState>();
-                  shell?.goTo(2);
+                 //  final shell = context.findAncestorStateOfType<RootShellState>();
+                 // shell?.goTo(2);
+                  Get.back();
                 },
-                child: const Text('Report a Boat Near Here →'),
+                child: const Text('Back →'),
               ),
             ),
           ],
