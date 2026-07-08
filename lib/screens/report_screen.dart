@@ -80,7 +80,7 @@ class _ReportScreenState extends State<ReportScreen> {
   ];
 
   final reportController = Get.put(ReportController());
-  final zoneController = Get.put(ZonessController());
+  final zoneController = Get.put(ZonesController());
 
   // Helper method to parse people count
   int _parsePeopleCount(String? peopleString) {
@@ -574,7 +574,7 @@ class _ZoneDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ZonessController zoneController = Get.find<ZonessController>();
+    final ZonesController zoneController = Get.find<ZonesController>();
 
     return Obx(() {
       // Show loading state
@@ -607,7 +607,7 @@ class _ZoneDropdown extends StatelessWidget {
       }
 
       // Show error state
-      if (zoneController.hasError) {
+      if (zoneController.hashError) {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
