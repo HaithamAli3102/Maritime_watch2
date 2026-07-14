@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
+import '../core/current_location_device.dart';
 import '../models/zone_model.dart';
 import '../services/api_client.dart';
 import '../models/report_model.dart';
@@ -15,13 +16,25 @@ class ReportController extends GetxController {
   final RxBool isSuccess = false.obs;
   final RxString errorMessage = ''.obs;
   final Rx<ReportModel?> reportResponse = Rx<ReportModel?>(null);
+  final RxList<ReportModel> reportsList = <ReportModel>[].obs;
   final RxMap<String, String> validationErrors = <String, String>{}.obs;
+
+  CurrentLocationDevice _currentLocationDevice = Get.put(CurrentLocationDevice());
+
+  @override
+  void onInit() {
+    print("currentLongitude ${_currentLocationDevice.currentLongitude}");
+    print("currentLatitude ${_currentLocationDevice.currentLatitude}");
+    // TODO: implement onInit
+    super.onInit();
+    getReports();
+  }
 
   // Method to add a new report
   Future<ReportModel?> addReport({
     required String date,
-    required String latitude,
-    required String longitude,
+    // required String latitude,
+    // required String longitude,
     required String address,
     required String zoneId,
     required String color,
@@ -42,8 +55,8 @@ class ReportController extends GetxController {
       // Prepare the request body
       final Map<String, dynamic> requestBody = {
         'date': date,
-        'latitude': latitude,
-        'longitude': longitude,
+        'latitude': _currentLocationDevice.currentLatitude.value,
+        'longitude': _currentLocationDevice.currentLongitude.value,
         'address': address,
         'zone_id': zoneId,
         'color': color,
@@ -66,7 +79,7 @@ class ReportController extends GetxController {
         ),
       );
 
-      print('📥 Response status: ${response.statusCode}');
+      print('📥 Response_status: ${response.statusCode}');
       print('📥 Response data: ${response.data}');
 
       // Check if response is successful
@@ -293,6 +306,7 @@ class ReportController extends GetxController {
     validationErrors.clear();
   }
 
+
   // Method to check if there's an error
   bool get hasError => errorMessage.value.isNotEmpty;
 
@@ -301,6 +315,50 @@ class ReportController extends GetxController {
 
   // Get validation errors
   Map<String, String> getErrors() => validationErrors;
+
+  // Method to fetch all reports
+  Future<List<ReportModel>> getReports() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      final response = await apiClient.dio.get('/reports');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        final List<ReportModel> fetchedReports = data
+            .map((json) => ReportModel.fromJson(json))
+            .toList();
+
+        print(response.data);
+
+        reportsList.assignAll(fetchedReports);
+        return fetchedReports;
+      } else {
+        throw Exception('Failed to load reports: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      String errorMsg = 'Failed to fetch reports';
+      if (e.response?.data != null && e.response?.data is Map) {
+        errorMsg = e.response?.data['message'] ?? errorMsg;
+      }
+      errorMessage.value = errorMsg;
+      Get.snackbar(
+        'Error',
+        errorMsg,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade700,
+        colorText: Colors.white,
+      );
+      return [];
+    } catch (e) {
+      errorMessage.value = e.toString();
+      print('Error fetching reports: $e');
+      return [];
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
 }
 

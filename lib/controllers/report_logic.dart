@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 import '../models/report_model.dart';
 import '../services/api_client.dart';
 
-class ReportController extends GetxController {
+class ReportLogic extends GetxController {
   final ApiClient apiClient = ApiClient();
 
   // Observable variables for state management

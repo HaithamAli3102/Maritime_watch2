@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'package:dropdown_flutter/custom_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:maritime_watch/screens/review_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
+import '../models/zone_model.dart';
 import '../theme/app_theme.dart';
 import '../data/zones_data.dart';
 import '../models/boat_report.dart';
@@ -82,6 +84,7 @@ class _ReportScreenState extends State<ReportScreen> {
   final reportController = Get.put(ReportController());
   final zoneController = Get.put(ZonessController());
 
+
   // Helper method to parse people count
   int _parsePeopleCount(String? peopleString) {
     if (peopleString == null) return 1;
@@ -101,65 +104,32 @@ class _ReportScreenState extends State<ReportScreen> {
         return 1;
     }
   }
+  //
+  // // Helper method to get zone data
+  // MaritimeZone? _getZoneData(String? zoneValue) {
+  //   if (zoneValue == null) return null;
+  //   print("hazaId : $zoneValue");
+  //   try {
+  //     return tanzaniaZones.firstWhere(
+  //           (z) => z.reportValue == zoneValue,
+  //       orElse: () => tanzaniaZones.first,
+  //     );
+  //   } catch (e) {
+  //     return null;
+  //   }
+  // }
 
-  // Helper method to get zone data
-  MaritimeZone? _getZoneData(String? zoneValue) {
-    if (zoneValue == null) return null;
-    print("hazaId : $zoneValue");
-    try {
-      return tanzaniaZones.firstWhere(
-            (z) => z.reportValue == zoneValue,
-        orElse: () => tanzaniaZones.first,
-      );
-    } catch (e) {
-      return null;
-    }
-  }
+
+  var zoneId = ''.obs;
+  var zoneName = ''.obs;
 
   // Method to submit report
   Future<void> _submitReport() async {
 
     final state = context.read<AppState>();
     final draft = state.draft;
-
-    // Validate required fields
-    // if (draft.zoneValue == null || draft.zoneValue!.isEmpty) {
-    //   Get.snackbar(
-    //     'Validation Error',
-    //     'Please select a restricted zone.',
-    //     snackPosition: SnackPosition.TOP,
-    //     backgroundColor: Colors.red.shade700,
-    //     colorText: Colors.white,
-    //   );
-    //   return;
-    // }
-    // print("object");
-    // if (draft.boatType == null || draft.boatType!.isEmpty) {
-    //   Get.snackbar(
-    //     'Validation Error',
-    //     'Please select a boat type.',
-    //     snackPosition: SnackPosition.TOP,
-    //     backgroundColor: Colors.red.shade700,
-    //     colorText: Colors.white,
-    //   );
-    //   return;
-    // }
-
     // Get zone data
-    final zone = _getZoneData(draft.zoneValue);
-    print('ssssxxx');
-    if (zone == null) {
-
-      print('ssss');
-      Get.snackbar(
-        'Error',
-        'Invalid zone selected. Please try again.',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red.shade700,
-        colorText: Colors.white,
-      );
-      return;
-    }
+    // final zone = _getZoneData(draft.zoneValue);
     print("object");
     // Map urgency to ID
     int urgencyId;
@@ -193,18 +163,12 @@ class _ReportScreenState extends State<ReportScreen> {
 
 // Or this (if server expects Y-m-d\TH:i:s.u\Z):
     final dx = '${draft.sightedAt.toIso8601String().split('.').first}Z';
-
-    print(d);
-    print(dd);
-    print(dx);
     try {
       // Call the API
       await reportController.addReport(
         date: formattedDate,
-        latitude: "-6.7565958",
-        longitude: '39.193252',
-        address: zone.name,
-        zoneId: '019f23d1-6f70-71e2-a651-6fa5549627ac',
+        address: zoneName.value,
+        zoneId: zoneId.value,
         color: draft.boatColor ?? 'Unknown',
         numberOfPeople: _parsePeopleCount(draft.peopleOnboard),
         description: draft.notes ?? 'No description provided',
@@ -235,6 +199,12 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    zoneController.fetchZones();
+  }
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
@@ -284,10 +254,43 @@ class _ReportScreenState extends State<ReportScreen> {
 
             // ── Zone ──
             const _FieldLabel('📍', 'Which restricted zone?'),
-            _ZoneDropdown(
-              value: draft.zoneValue,
-              onChanged: (v) => state.updateZone(v),
-            ),
+            Obx(() {
+              if (zoneController.zones.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+              return DropdownFlutter<ZoneModel>(
+                items: zoneController.zones,
+                enableKeyboardNavigation: true,
+                decoration: const CustomDropdownDecoration(
+                  listItemDecoration: ListItemDecoration(
+                    highlightedColor: Colors.blue,
+                  ),
+                ),
+                headerBuilder: (context, zone, isSelected) {
+                  return Text(zone.name ?? "",style: TextStyle(color: Colors.blue));
+                },
+                listItemBuilder: (context, zone, isSelected, onItemSelect) {
+                  return Padding(
+                    padding: const EdgeInsets.all(3),
+                    child: Text(zone.name ?? "", style: TextStyle(color: Colors.blue),),
+                  );
+                },
+                onChanged: (ZoneModel? zone) {
+                  if (zone == null) return;
+
+                  zoneId.value = zone.id!;
+                  zoneName.value = zone.name!;
+
+                  print(zoneId.value);
+                  print(zoneName.value);
+                },
+              );
+            }),
             const SizedBox(height: 6),
             const Text(
               'The zone coordinates are automatically included in your report to '
@@ -425,6 +428,14 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 }
+
+
+// ───────────────────────── Zone Dropdown ─────────────────────────
+
+// widget _ZoneDropdown() async{
+//
+// }
+
 
 // ───────────────────────── Sub-widgets ─────────────────────────
 
@@ -565,135 +576,7 @@ class _DateTimeField extends StatelessWidget {
   }
 }
 
-// ───────────────────────── Zone Dropdown ─────────────────────────
 
-class _ZoneDropdown extends StatelessWidget {
-  final String? value;
-  final ValueChanged<String?> onChanged;
-  const _ZoneDropdown({required this.value, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    final ZonessController zoneController = Get.find<ZonessController>();
-
-    return Obx(() {
-      // Show loading state
-      if (zoneController.isLoading.value) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
-            border: Border.all(color: AppColors.cardBorder),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.wave),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Loading zones...',
-                style: TextStyle(color: Colors.white38, fontSize: 14),
-              ),
-            ],
-          ),
-        );
-      }
-
-      // Show error state
-      if (zoneController.hasError) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.1),
-            border: Border.all(color: Colors.red.withOpacity(0.3)),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 20),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  zoneController.errorMessage.value,
-                  style: TextStyle(color: Colors.red.shade300, fontSize: 13),
-                ),
-              ),
-              TextButton(
-                onPressed: zoneController.refreshZones,
-                child: const Text('Retry', style: TextStyle(color: AppColors.wave)),
-              ),
-            ],
-          ),
-        );
-      }
-
-      // Build dropdown with zones from API
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.06),
-          border: Border.all(color: AppColors.cardBorder),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: value,
-            isExpanded: true,
-            dropdownColor: AppColors.ocean,
-            hint: Text(
-              zoneController.hasZones
-                  ? '— Select the zone or nearest area —'
-                  : '— No zones available —',
-              style: const TextStyle(color: Colors.white38, fontSize: 14),
-            ),
-            style: const TextStyle(color: Colors.white, fontSize: 14),
-            icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.wave),
-            items: [
-              // API Zones
-              ...zoneController.zones.map(
-                    (zone) => DropdownMenuItem(
-                  value: zone.name,
-                  child: Text(
-                    '${_getZoneIcon(zone.type.toString())} ${zone.name}',
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-              // Manual entry option
-              const DropdownMenuItem(
-                value: "Not sure — described in notes",
-                child: Text("I'm not sure — I'll describe it below"),
-              ),
-            ],
-            onChanged: zoneController.hasZones ? onChanged : null,
-          ),
-        ),
-      );
-    });
-  }
-
-  String _getZoneIcon(String type) {
-    switch (type.toLowerCase()) {
-      case 'restricted':
-        return '⛔';
-      case 'monitored':
-        return '🌿';
-      case 'danger':
-        return '⚠️';
-      case 'inactive':
-        return '⏸️';
-      default:
-        return '📍';
-    }
-  }
-}
 
 // ───────────────────────── Generic Dropdown ─────────────────────────
 

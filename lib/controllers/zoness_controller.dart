@@ -27,7 +27,6 @@ class ZonessController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
       isSuccess.value = false;
-
       final response = await apiClient.dio.get('/zones');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -44,7 +43,8 @@ class ZonessController extends GetxController {
         throw Exception('Failed to fetch zones: ${response.statusCode}');
       }
     } on DioException catch (e) {
-      String errorMsg = 'Network error occurred';
+      print('ERROR_MESSAGE IS $e');;
+      String errorMsg = 'Network error occurred ';
 
       if (e.response != null) {
         errorMsg = e.response?.data['message'] ?? 'Server error: ${e.response?.statusCode}';

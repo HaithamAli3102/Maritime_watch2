@@ -13,6 +13,7 @@ dependencies:
   geolocator: ^14.0.3
   dio: ^5.10.0
   get: ^4.7.3
+  dropdown_flutter: ^1.1.0
 
   # Automatic location — IP-based, no GPS permission dialog
   http: ^1.2.1
