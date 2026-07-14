@@ -82,7 +82,7 @@ class _ReportScreenState extends State<ReportScreen> {
   ];
 
   final reportController = Get.put(ReportController());
-  final zoneController = Get.put(ZonessController());
+  final zoneController = Get.put(ZonesController());
 
 
   // Helper method to parse people count
@@ -577,6 +577,134 @@ class _DateTimeField extends StatelessWidget {
 }
 
 
+
+class _ZoneDropdown extends StatelessWidget {
+  final String? value;
+  final ValueChanged<String?> onChanged;
+  const _ZoneDropdown({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final ZonesController zoneController = Get.find<ZonesController>();
+
+    return Obx(() {
+      // Show loading state
+      if (zoneController.isLoading.value) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.06),
+            border: Border.all(color: AppColors.cardBorder),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.wave),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Loading zones...',
+                style: TextStyle(color: Colors.white38, fontSize: 14),
+              ),
+            ],
+          ),
+        );
+      }
+
+      // Show error state
+      if (zoneController.hashError) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.red.withOpacity(0.1),
+            border: Border.all(color: Colors.red.withOpacity(0.3)),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  zoneController.errorMessage.value,
+                  style: TextStyle(color: Colors.red.shade300, fontSize: 13),
+                ),
+              ),
+              TextButton(
+                onPressed: zoneController.refreshZones,
+                child: const Text('Retry', style: TextStyle(color: AppColors.wave)),
+              ),
+            ],
+          ),
+        );
+      }
+
+      // Build dropdown with zones from API
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.06),
+          border: Border.all(color: AppColors.cardBorder),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: value,
+            isExpanded: true,
+            dropdownColor: AppColors.ocean,
+            hint: Text(
+              zoneController.hasZones
+                  ? '— Select the zone or nearest area —'
+                  : '— No zones available —',
+              style: const TextStyle(color: Colors.white38, fontSize: 14),
+            ),
+            style: const TextStyle(color: Colors.white, fontSize: 14),
+            icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.wave),
+            items: [
+              // API Zones
+              ...zoneController.zones.map(
+                    (zone) => DropdownMenuItem(
+                  value: zone.name,
+                  child: Text(
+                    '${_getZoneIcon(zone.type.toString())} ${zone.name}',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              // Manual entry option
+              const DropdownMenuItem(
+                value: "Not sure — described in notes",
+                child: Text("I'm not sure — I'll describe it below"),
+              ),
+            ],
+            onChanged: zoneController.hasZones ? onChanged : null,
+          ),
+        ),
+      );
+    });
+  }
+
+  String _getZoneIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'restricted':
+        return '⛔';
+      case 'monitored':
+        return '🌿';
+      case 'danger':
+        return '⚠️';
+      case 'inactive':
+        return '⏸️';
+      default:
+        return '📍';
+    }
+  }
+}
 
 // ───────────────────────── Generic Dropdown ─────────────────────────
 

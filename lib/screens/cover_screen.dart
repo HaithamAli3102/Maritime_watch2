@@ -119,7 +119,7 @@ class _Logo extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const LinearGradient(
-          colors: [Color.fromARGB(255, 38, 41, 229), Color.fromARGB(255, 14, 72, 220)],
+          colors: [Color.fromARGB(255, 18, 20, 114), Color.fromARGB(255, 5, 49, 161)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

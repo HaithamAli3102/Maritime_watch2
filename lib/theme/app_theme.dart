@@ -32,7 +32,7 @@ class AppColors {
   );
 
   static const gradientCover = LinearGradient(
-    colors: [Color.fromARGB(255, 16, 67, 220), navy, Color(0xFF020C16)],
+    colors: [Color.fromARGB(255, 34, 79, 216), navy, Color(0xFF020C16)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     stops: [0.0, 0.65, 1.0],
